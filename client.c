@@ -30,8 +30,21 @@ void echo_client(int client_fd){
 	}
 }
 
-int client_connect(int * client_fd)
+const char * get_ip(int argc, char const* argv[])
 {
+	const char * ip = argv[1];
+	return ip;
+}
+
+int get_port(int argc, char const* argv[])
+{
+	int port = atoi(argv[2]);
+	return port;
+}
+
+int client_connect(int * client_fd, int argc, char const* argv[])
+{
+
 	int status; 
 	struct sockaddr_in serv_addr;
 	if ((*(client_fd) = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -39,12 +52,17 @@ int client_connect(int * client_fd)
 		return -1;
 	}
 
+	// IP : 
+	const char * ip = get_ip(argc, argv);
+	int port = get_port(argc, argv);
+
+
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(PORT);
+	serv_addr.sin_port = htons(port);
 
 	// Convert IPv4 and IPv6 addresses from text to binary
 	// form
-	if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr)
+	if (inet_pton(AF_INET, ip, &serv_addr.sin_addr)
 		<= 0) {
 		printf(
 			"\nInvalid address/ Address not supported \n");
@@ -62,11 +80,14 @@ int client_connect(int * client_fd)
 	return 0;
 }
 
+
+
+
 int main(int argc, char const* argv[])
 {
 
 	int client_fd;
-	if(client_connect(&client_fd) == 0)
+	if(client_connect(&client_fd,argc, argv) == 0)
 		echo_client(client_fd);
 
 	// closing the connected socket

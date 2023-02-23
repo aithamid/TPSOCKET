@@ -53,6 +53,8 @@ void server_handle(int * server_fd, int * new_socket, int port)
 		perror("accept");
 		exit(EXIT_FAILURE);
 	}
+
+	printf("Le port : %d",address.sin_port);
 }
 
 void echo_server(int sockfd) {
@@ -77,19 +79,14 @@ void echo_server(int sockfd) {
 	}
 }
 
-int check_args(int argc, char const* argv[])
-{
-	if(argc>1)
-		return atoi(argv[1]);
-	return 8080;
-}
+
 
 int main(int argc, char const* argv[])
 {   
     
 	int server_fd, new_socket;
-	int port = check_args(argc, argv);
-	printf("HAAHAH%d", port);
+	int port = atoi(argv[1]);
+	printf("%d", port);
     server_handle(&server_fd, &new_socket, port);
     echo_server(new_socket);
 
