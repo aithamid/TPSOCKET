@@ -20,6 +20,7 @@ void echo_client(int client_fd){
 
 		if( strcmp(message, "/quit") == 0)
 		{
+			close(client_fd);
 			break;
 		}
 		read(client_fd, buffer, 1024);

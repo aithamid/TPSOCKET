@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <time.h>
 #include "common.h"
 
@@ -53,8 +54,26 @@ void server_handle(int * server_fd, int * new_socket, int port)
 		perror("accept");
 		exit(EXIT_FAILURE);
 	}
+	
 
-	printf("Le port : %d",address.sin_port);
+
+	const char* filename = "backup.txt";
+	FILE * fichier =NULL;
+    fichier =  fopen(filename, "a");
+    if (fichier != NULL)
+    {
+        	char saddr[INET_ADDRSTRLEN];
+			inet_ntop(AF_INET, &address.sin_addr.s_addr, saddr, INET_ADDRSTRLEN);
+			
+			char cport[5];
+			sprintf(cport, "%d", port);
+			fputs("Données du client IP : ", fichier);
+			fputs(saddr, fichier);
+			fputs(" PORT : ", fichier);
+			fputs(cport, fichier);
+			fputc('\n', fichier);
+        	fclose(fichier); // On ferme le fichier qui a été ouvert
+    }
 }
 
 void echo_server(int sockfd) {
@@ -66,16 +85,28 @@ void echo_server(int sockfd) {
 		if (recv(sockfd, buff, MSG_LEN, 0) <= 0) {
 			break;
 		}
-		printf("Received: %s", buff);
+
+		// Check if he want quit
+		const char* filename = "backup.txt";
+		FILE * fichier =NULL;
+		fichier =  fopen(filename, "a");
+		if (fichier != NULL)
+		{
+				fputs("- ", fichier);
+				fputs(buff, fichier);
+				fputc('\n', fichier);
+				fclose(fichier); // On ferme le fichier qui a été ouvert
+		}
         if( strcmp(buff, "/quit") == 0)
 		{
+			close(sockfd);
 			return;
 		}
 		// Sending message (ECHO)
 		if (send(sockfd, buff, strlen(buff), 0) <= 0) {
 			break;
 		}
-		printf("Message sent!\n");
+		printf("\tMessage sent!\n");
 	}
 }
 
@@ -83,14 +114,14 @@ void echo_server(int sockfd) {
 
 int main(int argc, char const* argv[])
 {   
-    
 	int server_fd, new_socket;
 	int port = atoi(argv[1]);
-	printf("%d", port);
-    server_handle(&server_fd, &new_socket, port);
-    echo_server(new_socket);
-
-	close(new_socket);
+    while(1)
+	{	
+		printf("%d", port);
+		server_handle(&server_fd, &new_socket, port);
+		echo_server(new_socket);
+	}
     
 	// closing the listening socket
 	shutdown(server_fd, SHUT_RDWR);
