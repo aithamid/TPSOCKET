@@ -7,27 +7,23 @@
 #include <unistd.h>
 #include <time.h>
 #define PORT 8080
-
+#define BUFF_MAX 8192
 
 void echo_client(int client_fd){
-	char buffer[1024] = { 0 };
+	char buffer[BUFF_MAX] = { 0 };
 	while(1)
 	{	
-		char message[20];
-		printf("Sent : \t\t");
-		scanf("%s", message);
+		char message[BUFF_MAX] ="coucou";
+		printf("Sent : \t\t%s\n",message);
+		//scanf("%s", message);
 		send(client_fd, message, strlen(message), 0);
 
-		if( strcmp(message, "/quit") == 0)
-		{
-			close(client_fd);
-			break;
-		}
-		read(client_fd, buffer, 1024);
+		read(client_fd, buffer, BUFF_MAX);
 		if(buffer[0] != '\0')    
         	printf("Received : \t%s\n", buffer);
 
-		memset(buffer, 0, 1024);
+		memset(buffer, 0, BUFF_MAX);
+		sleep(1);
 	}
 }
 
@@ -88,8 +84,11 @@ int main(int argc, char const* argv[])
 {
 
 	int client_fd;
-	if(client_connect(&client_fd,argc, argv) == 0)
+	if(client_connect(&client_fd,argc, argv) == 0){
+		
 		echo_client(client_fd);
+		
+	}
 
 	// closing the connected socket
 	close(client_fd);
